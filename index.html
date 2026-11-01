@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Open Mic Songbook</title>
+<meta name="description" content="Practice sheets for open mic songs: chords, strumming, metronome, lyrics and recordings.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" href="icon-192.png" type="image/png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Songbook">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#dde8f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1823" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Source+Sans+3:wght@400;600;700&family=Zilla+Slab:wght@500;700&display=swap">
+<style>
+/* Layout: app shell. Song picker and title on top, a sticky row of views, one view at a time, metronome dock pinned to the bottom. */
+:root{
+  --bg:#edf1f5; --card:#fbfcfd; --ink:#132130; --muted:#566676; --line:#d2dbe4;
+  --rain:#2f6489; --rain-soft:#dde8f1; --amber:#e29a24; --amber-ink:#7a4700; --on-amber:#1d1100;
+  --chip:#ffffff; --hit:#e29a24; --rec:#c2382f; --on-rec:#ffffff;
+  --display:'Zilla Slab',Georgia,'Times New Roman',serif; --body:'Source Sans 3',system-ui,-apple-system,'Segoe UI',sans-serif; --mono:'IBM Plex Mono',ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0f1823; --card:#172331; --ink:#e6edf4; --muted:#98a8b8; --line:#273a4e;
+    --rain:#7fb0d6; --rain-soft:#1c3144; --amber:#f0a73a; --amber-ink:#f5bd63; --on-amber:#1d1100;
+    --chip:#1b2a3a; --hit:#f0a73a; --rec:#e5534b; --on-rec:#ffffff; color-scheme:dark;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink); font-family:var(--body); font-size:17px; line-height:1.5;
+  padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));
+  -webkit-tap-highlight-color:transparent;
+}
+[hidden]{display:none!important}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:920px;margin:0 auto}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.15}
+a{color:var(--rain);text-underline-offset:3px}
+:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+
+/* header */
+header.top{
+  padding-top:calc(14px + env(safe-area-inset-top,0px)); padding-bottom:16px;
+  background:
+    repeating-linear-gradient(104deg,transparent 0 13px,rgba(127,176,214,.16) 13px 14px,transparent 14px 31px),
+    linear-gradient(180deg,var(--rain-soft),var(--bg));
+}
+.setlist{display:flex;gap:8px;overflow-x:auto;padding:2px 0 12px;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.setlist::-webkit-scrollbar{display:none}
+.byline{font-family:var(--mono);font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+h1{font-size:clamp(1.9rem,7vw,3.2rem);font-weight:700;margin:6px 0 12px}
+.facts{display:flex;flex-wrap:wrap;gap:8px}
+.fact{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:5px 11px;min-width:0}
+.fact small{display:block;font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.fact b{font-family:var(--mono);font-weight:600;font-size:1rem}
+
+/* view switcher */
+.views{position:sticky;top:0;z-index:15;background:var(--bg);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top,0px)}
+.views .in{display:flex;gap:4px;max-width:920px;margin:0 auto;padding-block:8px}
+.vtab{flex:1 1 0;font:inherit;font-weight:600;font-size:.95rem;background:transparent;color:var(--muted);border:0;border-radius:8px;padding:9px 4px;cursor:pointer;min-height:44px}
+.vtab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.vtab .rec-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--rec);margin-left:5px;vertical-align:middle}
+
+main{padding-block:8px 24px}
+section.block{padding-top:26px}
+section.block>h2{font-size:1.5rem;margin-bottom:6px}
+.sub{color:var(--muted);margin:0 0 14px;max-width:66ch}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.row{display:flex;flex-wrap:wrap;gap:12px 16px;align-items:flex-end}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+select,textarea,input[type=text]{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px 10px}
+select{min-width:7em;font-size:1rem}
+input[type=text]{width:100%;min-width:0}
+.readout{font-size:1rem;margin:12px 0 0}
+.readout b{font-family:var(--mono)}
+.fine{font-size:.86rem;color:var(--muted);max-width:70ch;margin:8px 0 0}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:9px 14px;cursor:pointer;min-height:44px;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn.primary{background:var(--amber);color:var(--on-amber);border-color:var(--amber)}
+.btn.sm{padding:6px 12px;min-height:38px;font-size:.95rem}
+.btn:disabled{opacity:.5;cursor:default}
+.tabs{display:flex;flex-wrap:wrap;gap:8px}
+.tab{font:inherit;font-weight:600;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:7px 13px;cursor:pointer;min-height:40px;white-space:nowrap}
+.tab[aria-selected="true"]{background:var(--amber);color:var(--on-amber);border-color:var(--amber)}
+
+/* song map */
+.sect{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 16px;padding:14px 0;border-top:1px solid var(--line)}
+.sect:first-child{border-top:0;padding-top:0}
+.sect:last-child{padding-bottom:0}
+.sect h3{font-size:1.1rem}
+.sect .note{font-size:.88rem;color:var(--muted);margin:4px 0 0}
+.lines{display:flex;flex-direction:column;gap:8px;min-width:0}
+.line{display:flex;flex-wrap:wrap;gap:6px;border-left:3px solid var(--rain);padding-left:10px}
+.chip{background:var(--chip);border:1px solid var(--line);border-radius:6px;padding:4px 9px 3px;min-width:3.1em;text-align:center}
+.chip b{display:block;font-family:var(--mono);font-size:1.15rem;font-weight:600;line-height:1.25}
+.chip i{display:block;font-style:normal;font-family:var(--mono);font-size:.7rem;color:var(--muted)}
+@media (max-width:560px){.sect{grid-template-columns:minmax(0,1fr)}}
+
+/* strumming */
+#patTabs{margin-bottom:12px}
+.grid8{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:5px;margin:6px 0 12px}
+.cell{border:1px solid var(--line);border-radius:8px;background:var(--card);text-align:center;padding:6px 0 8px;min-width:0}
+.cell small{display:block;font-family:var(--mono);font-size:.76rem;color:var(--muted)}
+.cell.beat small{color:var(--ink);font-weight:600}
+.cell span{display:block;font-family:var(--mono);font-size:1.35rem;font-weight:600;min-height:1.9rem}
+.cell.on{background:var(--hit);border-color:var(--hit)}
+.cell.on small,.cell.on span{color:var(--on-amber)}
+.how{margin:0 0 6px;max-width:66ch}
+
+/* shapes */
+.shapes{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:10px}
+.shape{margin:0;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px 6px 6px;text-align:center;min-width:0}
+.shape figcaption{font-family:var(--mono);font-weight:600;font-size:1.05rem}
+.shape svg{display:block;margin:0 auto;width:84px;max-width:100%;height:auto;color:var(--ink)}
+.shape p{margin:6px 4px 2px;font-size:.78rem;color:var(--muted)}
+
+/* metronome panel */
+.bpmbig{font-family:var(--mono);font-size:3.2rem;font-weight:600;line-height:1}
+.bpmbig small{font-size:1rem;color:var(--muted);margin-left:6px}
+input[type=range]{width:100%;accent-color:var(--amber);height:34px}
+.beats{display:flex;gap:10px;margin:14px 0 4px}
+.dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);background:var(--bg)}
+.dot.on{background:var(--hit);border-color:var(--hit)}
+.dot.one.on{background:var(--rain);border-color:var(--rain)}
+.chk{display:flex;gap:8px;align-items:center;font-size:.95rem;min-height:40px}
+.chk input{width:20px;height:20px;accent-color:var(--amber);flex:none}
+
+/* lyrics */
+.lyr-bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px}
+.lyr-bar .grow{flex:1 1 auto}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px 16px;font-size:var(--lyr-size,19px);line-height:1.45;overflow-x:auto}
+.sheet .ln{white-space:pre-wrap;min-height:1.2em}
+.sheet .ln.inl{line-height:1.5;padding-top:1.05em}
+.sheet .ln.inl+.ln.inl{padding-top:.95em}
+.sizegrp{display:inline-flex;gap:6px}
+.sheet .cline{font-family:var(--mono);white-space:pre;color:var(--amber-ink);font-weight:600;font-size:.9em}
+.sheet .lyr{font-family:var(--mono);white-space:pre;font-size:.9em}
+.sheet .head{font-family:var(--display);font-weight:700;color:var(--rain);margin-top:.9em}
+.sheet .ch{position:relative;display:inline-block;width:0;overflow:visible;vertical-align:baseline}
+.sheet .ch b{position:absolute;bottom:1.15em;left:0;line-height:1;font-family:var(--mono);font-size:.78em;font-weight:600;color:var(--amber-ink);white-space:nowrap}
+.sheet .pad{display:inline-block}
+#lyricsBox{width:100%;min-height:55vh;font-family:var(--mono);font-size:15px;line-height:1.5;white-space:pre;overflow:auto;tab-size:4;resize:vertical}
+.empty{color:var(--muted);margin:0}
+.lyr-empty{padding:22px 16px;text-align:left}
+.lyr-empty h3{font-size:1.2rem;margin-bottom:6px}
+
+/* stage mode */
+body.stage header.top,body.stage .views,body.stage .lyr-bar,body.stage .lyr-meta,body.stage .dock{display:none!important}
+body.stage main{padding-top:calc(12px + env(safe-area-inset-top,0px))}
+body.stage .sheet{border:0;background:transparent;padding-inline:0}
+.stagebar{position:fixed;z-index:30;right:max(12px,env(safe-area-inset-right,0px));bottom:calc(14px + env(safe-area-inset-bottom,0px));display:flex;gap:8px}
+.stagebar .btn{box-shadow:0 2px 10px rgba(0,0,0,.18)}
+
+/* takes */
+.recbox{display:grid;gap:14px}
+.recrow{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.recbtn{width:76px;height:76px;border-radius:50%;border:4px solid var(--line);background:var(--card);cursor:pointer;display:grid;place-items:center;flex:none}
+.recbtn i{display:block;width:34px;height:34px;border-radius:50%;background:var(--rec);transition:border-radius .15s,width .15s,height .15s}
+.recbtn.on i{border-radius:6px;width:28px;height:28px}
+.recbtn.on{border-color:var(--rec)}
+.rectime{font-family:var(--mono);font-size:2rem;font-weight:600;min-width:5ch}
+.meterbar{flex:1 1 140px;height:10px;border-radius:5px;background:var(--bg);border:1px solid var(--line);overflow:hidden;min-width:100px}
+.meterbar i{display:block;height:100%;width:0;background:var(--rain);transition:width .06s linear}
+.status{font-size:.92rem;margin:0;min-height:1.4em}
+.status.err{color:var(--amber-ink)}
+.take-list{display:grid;gap:12px;margin-top:14px}
+.take{display:grid;gap:8px;min-width:0}
+.take-head{display:flex;flex-wrap:wrap;gap:4px 14px;align-items:baseline}
+.take-head b{font-family:var(--display);font-size:1.1rem}
+.take-head span{font-family:var(--mono);font-size:.8rem;color:var(--muted)}
+.take audio,.take video{width:100%;max-width:100%;display:block}
+.take video{max-height:300px;border-radius:8px;background:var(--bg)}
+.take-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.take-tools input{flex:1 1 200px}
+.filepick{position:relative;overflow:hidden}
+.filepick input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
+
+/* prep */
+.lists{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px}
+.check{display:flex;gap:10px;align-items:flex-start;padding:7px 0;border-top:1px solid var(--line)}
+.check:first-of-type{border-top:0}
+.check input{margin-top:4px;width:20px;height:20px;flex:none;accent-color:var(--amber)}
+.check b{display:block}
+.check span{color:var(--muted);font-size:.92rem}
+.check input:checked+div{opacity:.55}
+.lists h3{font-size:1.1rem;margin-bottom:4px}
+.links{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px}
+.links h3{font-size:1.08rem;margin-bottom:6px}
+.links ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.links li{font-size:.95rem;line-height:1.35}
+.links li span{display:block;color:var(--muted);font-size:.85rem}
+
+/* more */
+.songrow{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line)}
+.songrow:first-child{border-top:0}
+.songrow div{flex:1 1 auto;min-width:0}
+.songrow small{display:block;color:var(--muted)}
+.banner{display:flex;gap:12px;align-items:flex-start;background:var(--card);border:1px solid var(--line);border-left:4px solid var(--amber);border-radius:10px;padding:12px 14px;margin-top:12px}
+.banner p{margin:0;flex:1 1 auto;font-size:.95rem}
+
+/* dock */
+.dock{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--card);border-top:1px solid var(--line);
+  padding:8px max(16px,env(safe-area-inset-right,0px)) calc(8px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+}
+.dock .in{max-width:920px;margin:0 auto;display:flex;align-items:center;gap:10px}
+.dock .play{width:50px;height:50px;border-radius:50%;border:0;background:var(--amber);color:var(--on-amber);font-size:1.25rem;font-weight:700;cursor:pointer;flex:none}
+.dock .bpm{font-family:var(--mono);font-size:1.35rem;font-weight:600;min-width:4.4ch;text-align:center}
+.dock .bpm small{font-size:.66rem;color:var(--muted);display:block;line-height:1}
+.dock .beats{margin:0 0 0 auto}
+.dock .dot{width:15px;height:15px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.95rem;max-width:calc(100% - 32px);box-shadow:0 4px 18px rgba(0,0,0,.25)}
+.toast button{margin-left:10px;font:inherit;font-weight:700;background:none;border:0;color:var(--amber);cursor:pointer;padding:0}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<header class="top gut"><div class="wrap">
+  <div class="setlist" id="songTabs" role="tablist" aria-label="Set list"></div>
+  <div class="byline" id="byline"></div>
+  <h1 id="songTitle">Open Mic Songbook</h1>
+  <div class="facts" id="facts"></div>
+  <div class="banner" id="installHint" hidden>
+    <p><b>Install the app:</b> tap the Share button in Safari, then <b>Add to Home Screen</b>. It then opens full screen and works offline.</p>
+    <button class="btn sm" id="installClose" type="button">Got it</button>
+  </div>
+</div></header>
+
+<nav class="views gut" aria-label="Views"><div class="in" role="tablist">
+  <button class="vtab" role="tab" type="button" data-view="chart" aria-selected="true">Chart</button>
+  <button class="vtab" role="tab" type="button" data-view="lyrics" aria-selected="false">Lyrics</button>
+  <button class="vtab" role="tab" type="button" data-view="takes" aria-selected="false">Takes<span class="rec-dot" id="recDot" hidden></span></button>
+  <button class="vtab" role="tab" type="button" data-view="prep" aria-selected="false">Prep</button>
+  <button class="vtab" role="tab" type="button" data-view="more" aria-selected="false">More</button>
+</div></nav>
+
+<main class="gut"><div class="wrap">
+
+<!-- CHART -->
+<div id="view-chart">
+  <section class="block" style="padding-top:16px">
+    <div class="panel">
+      <div class="row">
+        <label class="f" for="keySel">Sounding key<select id="keySel"></select></label>
+        <label class="f" for="capoSel">Capo fret
+          <select id="capoSel">
+            <option value="0">No capo</option><option value="1">1</option><option value="2">2</option><option value="3">3</option>
+            <option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="7">7</option>
+          </select>
+        </label>
+      </div>
+      <p class="readout" id="keyReadout"></p>
+    </div>
+  </section>
+  <section class="block">
+    <h2>Song map</h2>
+    <p class="sub">The small number under each chord is its Nashville number, the same in every key.</p>
+    <div class="panel" id="songMap"></div>
+    <p class="fine" id="chartNote"></p>
+  </section>
+  <section class="block">
+    <h2>Strumming</h2>
+    <p class="sub">Press play on the metronome and the grid lights up in time.</p>
+    <div class="tabs" role="tablist" id="patTabs"></div>
+    <div class="grid8" id="patGrid" aria-label="Eight-step strum pattern"></div>
+    <p class="how" id="patHow"></p>
+    <p class="fine" id="patLegend"></p>
+  </section>
+  <section class="block">
+    <h2>Chord shapes</h2>
+    <p class="sub" id="shapesSub"></p>
+    <div class="shapes" id="shapeGrid"></div>
+  </section>
+  <section class="block">
+    <h2>Metronome</h2>
+    <p class="sub" id="metroSub"></p>
+    <div class="panel">
+      <div class="bpmbig"><span id="bpmBig">80</span><small>BPM</small></div>
+      <input type="range" id="bpmRange" min="40" max="160" value="80" aria-label="Tempo in beats per minute">
+      <div class="row" style="margin-top:8px">
+        <button class="btn primary" id="playBtn" type="button">Start</button>
+        <button class="btn" id="tapBtn" type="button">Tap tempo</button>
+        <div class="tabs" id="presets" role="group" aria-label="Tempo presets"></div>
+      </div>
+      <div class="beats" id="beatDots" aria-hidden="true"><div class="dot one"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+      <label class="chk" for="subOn"><input type="checkbox" id="subOn"> Also click the "and" between beats</label>
+      <p class="fine">No sound on an iPhone? Turn off silent mode with the switch or Action button and turn the volume up.</p>
+    </div>
+  </section>
+</div>
+
+<!-- LYRICS -->
+<div id="view-lyrics" hidden>
+  <section class="block" style="padding-top:16px">
+    <div class="lyr-bar">
+      <button class="btn primary" id="scrollBtn" type="button" aria-pressed="false">Auto-scroll</button>
+      <label class="f" style="flex-direction:row;align-items:center;gap:8px;text-transform:none;letter-spacing:0;font-size:.9rem" for="scrollSpeed">Speed
+        <input type="range" id="scrollSpeed" min="1" max="10" value="3" style="width:110px"></label>
+      <span class="sizegrp"><button class="btn sm" id="fontMinus" type="button" aria-label="Smaller text">A−</button>
+      <button class="btn sm" id="fontPlus" type="button" aria-label="Larger text">A+</button></span>
+      <span class="grow"></span>
+      <button class="btn sm" id="stageBtn" type="button">Stage view</button>
+      <button class="btn sm" id="editBtn" type="button">Edit</button>
+    </div>
+    <div class="lyr-meta panel" style="margin-bottom:12px">
+      <div class="row">
+        <label class="f" for="lyrKeySel">Chart written in<select id="lyrKeySel"></select></label>
+        <a class="btn sm" id="lyrLink" href="#" target="_blank" rel="noopener">Open a lyrics source</a>
+      </div>
+      <p class="readout" id="lyrReadout"></p>
+      <p class="fine" id="lyrHelp"></p>
+    </div>
+    <div id="lyrRead"></div>
+    <div id="lyrEdit" hidden>
+      <textarea id="lyricsBox" spellcheck="false" aria-label="Lyrics and chords" placeholder="Paste lyrics and chords here.&#10;&#10;Both styles work:&#10;[C]Chords in brackets like this&#10;&#10;or chords on their own line&#10;C           G&#10;above the words."></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn primary" id="lyrDone" type="button">Done</button>
+        <button class="btn sm" id="lyrClear" type="button">Clear</button>
+      </div>
+      <p class="fine">Saved on this phone only. Lyrics are never uploaded.</p>
+    </div>
+  </section>
+</div>
+
+<!-- TAKES -->
+<div id="view-takes" hidden>
+  <section class="block" style="padding-top:16px">
+    <div class="panel recbox">
+      <div class="recrow">
+        <button class="recbtn" id="recBtn" type="button" aria-label="Start recording"><i></i></button>
+        <div class="rectime" id="recTime">0:00</div>
+        <div class="meterbar" aria-hidden="true"><i id="recLevel"></i></div>
+      </div>
+      <input type="text" id="takeNote" maxlength="200" placeholder="Note for this take, e.g. 80 BPM, rushed the bridge" aria-label="Note for this take">
+      <label class="chk" for="countIn"><input type="checkbox" id="countIn" checked> Count me in (four clicks at the song tempo)</label>
+      <p class="status" id="takeStatus" role="status"></p>
+      <p class="fine" style="margin:0">Prop the phone a few feet away, mic pointed at the guitar. The metronome can keep clicking while you record, so use headphones if you don't want it on the take.</p>
+    </div>
+    <div class="row" style="margin-top:12px;align-items:center">
+      <span class="btn filepick">Add a recording file<input type="file" id="takeFile" accept="audio/*,video/*" aria-label="Choose a recording to add"></span>
+      <span class="fine" style="margin:0">For memos you recorded somewhere else.</span>
+    </div>
+    <p class="empty" id="takesEmpty" style="margin-top:14px"></p>
+    <div class="take-list" id="takeList"></div>
+    <p class="fine" id="takeMeter"></p>
+  </section>
+</div>
+
+<!-- PREP -->
+<div id="view-prep" hidden>
+  <section class="block" style="padding-top:16px">
+    <h2>Practice plan</h2>
+    <p class="sub">Move on when you can play the step three times in a row without stopping.</p>
+    <div class="panel" id="planList"></div>
+    <p style="margin:10px 0 0"><button class="btn sm" id="planReset" type="button">Clear all ticks</button></p>
+  </section>
+  <section class="block">
+    <h2>Listen &amp; links</h2>
+    <p class="sub">These open in your browser. Searches go to YouTube.</p>
+    <div class="links" id="linkGrid"></div>
+  </section>
+  <section class="block">
+    <h2>Open mic night</h2>
+    <p class="sub">Everything outside the song itself.</p>
+    <div class="lists">
+      <div class="panel"><h3>Gear</h3><div id="listGear"></div></div>
+      <div class="panel"><h3>Ask the host</h3><div id="listHost"></div></div>
+      <div class="panel"><h3>On stage</h3><div id="listStage"></div></div>
+    </div>
+  </section>
+</div>
+
+<!-- MORE -->
+<div id="view-more" hidden>
+  <section class="block" style="padding-top:16px">
+    <h2>Songs</h2>
+    <p class="sub">Built-in songs come with the app and update when it updates. You can also add a song from a song file.</p>
+    <div class="panel" id="songAdmin"></div>
+    <div class="row" style="margin-top:12px;align-items:center">
+      <span class="btn primary filepick">Add a song from a file<input type="file" id="songFile" accept=".json,application/json,text/plain" aria-label="Choose a song file"></span>
+    </div>
+    <p class="status" id="songStatus" role="status"></p>
+  </section>
+  <section class="block">
+    <h2>Back up</h2>
+    <p class="sub">Your lyrics, notes, ticks, settings and added songs live only on this phone. Save a backup file now and then, and restore it on a new phone. Recordings are not in the backup; use Share on each take to keep the ones you want.</p>
+    <div class="row">
+      <button class="btn" id="backupBtn" type="button">Save a backup</button>
+      <span class="btn filepick">Restore a backup<input type="file" id="restoreFile" accept=".json,application/json" aria-label="Choose a backup file"></span>
+    </div>
+    <p class="status" id="backupStatus" role="status"></p>
+  </section>
+  <section class="block">
+    <h2>About</h2>
+    <p class="sub" id="aboutText">Open Mic Songbook works offline once installed. Lyrics and recordings never leave this phone.</p>
+    <p class="fine" id="storageNote"></p>
+    <p class="fine">Version <span id="appVersion"></span></p>
+  </section>
+</div>
+
+</div></main>
+
+<div class="stagebar" id="stageBar" hidden>
+  <button class="btn primary" id="stageScroll" type="button">Auto-scroll</button>
+  <button class="btn" id="stageExit" type="button">Exit</button>
+</div>
+
+<div class="dock" role="region" aria-label="Metronome">
+  <div class="in">
+    <button class="play" id="dockPlay" type="button" aria-label="Start metronome">▶</button>
+    <button class="btn sm" id="dockMinus" type="button" aria-label="Slower by 2">−2</button>
+    <div class="bpm"><span id="dockBpm">80</span><small>BPM</small></div>
+    <button class="btn sm" id="dockPlus" type="button" aria-label="Faster by 2">+2</button>
+    <div class="beats" id="dockDots" aria-hidden="true"><div class="dot one"></div><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script src="songs.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
