@@ -180,6 +180,14 @@ body.stage .sheet{border:0;background:transparent;padding-inline:0}
 .take video{max-height:300px;border-radius:8px;background:var(--bg)}
 .take-tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .take-tools input{flex:1 1 200px}
+.ytbox{position:relative;width:100%;max-width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#000;margin-top:12px}
+.ytbox iframe,.ytbox>div{position:absolute;inset:0;width:100%;height:100%;border:0}
+.transport{display:grid;gap:10px;margin-top:14px}
+.trow{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.ttime{font-family:var(--mono);font-size:.95rem;color:var(--muted);min-width:11ch}
+.btn.on{background:var(--rain);color:var(--card);border-color:var(--rain)}
+.grow2{flex:1 1 220px;min-width:0}
+#btSeek{height:30px}
 .filepick{position:relative;overflow:hidden}
 .filepick input{position:absolute;inset:0;opacity:0;cursor:pointer;font-size:0}
 
@@ -238,7 +246,7 @@ body.stage .sheet{border:0;background:transparent;padding-inline:0}
 <nav class="views gut" aria-label="Views"><div class="in" role="tablist">
   <button class="vtab" role="tab" type="button" data-view="chart" aria-selected="true">Chart</button>
   <button class="vtab" role="tab" type="button" data-view="lyrics" aria-selected="false">Lyrics</button>
-  <button class="vtab" role="tab" type="button" data-view="takes" aria-selected="false">Takes<span class="rec-dot" id="recDot" hidden></span></button>
+  <button class="vtab" role="tab" type="button" data-view="takes" aria-selected="false">Play<span class="rec-dot" id="recDot" hidden></span></button>
   <button class="vtab" role="tab" type="button" data-view="prep" aria-selected="false">Prep</button>
   <button class="vtab" role="tab" type="button" data-view="more" aria-selected="false">More</button>
 </div></nav>
@@ -334,6 +342,52 @@ body.stage .sheet{border:0;background:transparent;padding-inline:0}
 <!-- TAKES -->
 <div id="view-takes" hidden>
   <section class="block" style="padding-top:16px">
+    <h2>Backing track</h2>
+    <p class="sub">Play along with a karaoke or backing track. Slow it down, loop the hard part, and record yourself over it.</p>
+    <div class="panel">
+      <div class="tabs" role="tablist" id="btSrcTabs" aria-label="Backing track source">
+        <button class="tab" role="tab" type="button" data-src="file" aria-selected="true">Audio file</button>
+        <button class="tab" role="tab" type="button" data-src="yt" aria-selected="false">YouTube</button>
+      </div>
+      <div id="btFile" style="margin-top:12px">
+        <p class="empty" id="btFileInfo" style="margin-bottom:10px"></p>
+        <div class="row" style="align-items:center">
+          <span class="btn filepick" id="btFilePick"><span id="btFilePickLabel">Add a backing track</span><input type="file" id="btFileInput" accept="audio/*,.mp3,.m4a,.wav,.aac" aria-label="Choose a backing track file"></span>
+          <button class="btn sm" id="btFileRemove" type="button" hidden>Remove</button>
+        </div>
+        <p class="fine">An MP3 or M4A you own, such as a karaoke track you bought. It stays on this phone and plays offline.</p>
+      </div>
+      <div id="btYt" style="margin-top:12px" hidden>
+        <div class="row">
+          <label class="f grow2" for="btYtUrl">YouTube link<input type="text" id="btYtUrl" inputmode="url" autocomplete="off" placeholder="Paste a youtube.com or youtu.be link"></label>
+          <button class="btn" id="btYtSet" type="button">Use video</button>
+        </div>
+        <p class="fine"><a id="btYtSearch" href="#" target="_blank" rel="noopener">Search YouTube for a karaoke version</a>, then use Share › Copy link on the video and paste it here. Needs an internet connection, and YouTube may show ads.</p>
+        <div class="ytbox" id="ytBox" hidden></div>
+      </div>
+      <div class="transport" id="btTransport" hidden>
+        <input type="range" id="btSeek" min="0" max="1000" value="0" step="1" aria-label="Position in the backing track">
+        <div class="trow">
+          <button class="btn sm" id="btBack" type="button" aria-label="Back 5 seconds">−5s</button>
+          <button class="btn primary" id="btPlay" type="button">Play</button>
+          <span class="ttime" id="btTime">0:00 / 0:00</span>
+          <label class="f" style="flex-direction:row;align-items:center;gap:6px" for="btRate">Speed
+            <select id="btRate"><option value="0.75">0.75×</option><option value="0.85">0.85×</option><option value="1" selected>1×</option></select></label>
+        </div>
+        <div class="trow">
+          <button class="btn sm" id="btSetA" type="button">Set loop start</button>
+          <button class="btn sm" id="btSetB" type="button">Set loop end</button>
+          <button class="btn sm" id="btLoop" type="button" aria-pressed="false">Loop off</button>
+          <span class="ttime" id="btLoopInfo"></span>
+        </div>
+        <label class="chk" for="btWithRec"><input type="checkbox" id="btWithRec" checked> Start the backing track when I record</label>
+      </div>
+      <p class="status" id="btStatus" role="status"></p>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Record a take</h2>
     <div class="panel recbox">
       <div class="recrow">
         <button class="recbtn" id="recBtn" type="button" aria-label="Start recording"><i></i></button>
@@ -343,7 +397,7 @@ body.stage .sheet{border:0;background:transparent;padding-inline:0}
       <input type="text" id="takeNote" maxlength="200" placeholder="Note for this take, e.g. 80 BPM, rushed the bridge" aria-label="Note for this take">
       <label class="chk" for="countIn"><input type="checkbox" id="countIn" checked> Count me in (four clicks at the song tempo)</label>
       <p class="status" id="takeStatus" role="status"></p>
-      <p class="fine" style="margin:0">Prop the phone a few feet away, mic pointed at the guitar. The metronome can keep clicking while you record, so use headphones if you don't want it on the take.</p>
+      <p class="fine" style="margin:0">Prop the phone a few feet away, mic pointed at the guitar. When a backing track starts with the take, the count-in is skipped; the track's intro counts you in. The mic records whatever the speaker plays, so turn the track down if it drowns you out.</p>
     </div>
     <div class="row" style="margin-top:12px;align-items:center">
       <span class="btn filepick">Add a recording file<input type="file" id="takeFile" accept="audio/*,video/*" aria-label="Choose a recording to add"></span>

@@ -1,7 +1,7 @@
 /* Open Mic Songbook app. Everything the person adds (lyrics, ticks, settings, recordings) stays on this device. */
 (function () {
   'use strict';
-  var APP_VERSION = '1.0.0';
+  var APP_VERSION = '1.1.0';
 
   /* ---------- small helpers ---------- */
   function $(id) { return document.getElementById(id); }
@@ -291,8 +291,8 @@
       ['Whole song at ' + t[1] + ' BPM', 'Play through without stopping, even after a slip. Rejoin on the next line.'],
       ['Add the vocal', 'Sing and play at ' + t[1] + ' BPM. If the words and your hand fight, speak the words in rhythm first.'],
       ['Climb to ' + song.bpm + ' BPM', 'Raise the tempo 4 BPM at a time, after two clean run-throughs in a row.'],
-      ['Record a take and listen back', 'Use the Takes tab. Listen for rushing, dropped chords and where your voice strains.'],
-      ['Play with a backing track', 'Use a karaoke or instrumental version from the links, in your key.'],
+      ['Record a take and listen back', 'Use the Play tab. Listen for rushing, dropped chords and where your voice strains.'],
+      ['Play with a backing track', 'Load a karaoke or instrumental version on the Play tab. Start it at 0.85× speed, then work up to full speed.'],
       ['Perform it standing up', 'Stand, wear the strap, use Stage view for the lyrics, and play it top to bottom.'],
       ['Three clean run-throughs', 'Do this the day before. Then stop practicing the song and rest your hands.']
     ];
@@ -550,18 +550,23 @@
     if (dbp) return dbp;
     dbp = new Promise(function (res, rej) {
       if (!window.indexedDB) { rej(new Error('no-idb')); return; }
-      var r = indexedDB.open('songbook', 1);
-      r.onupgradeneeded = function () { var s = r.result.createObjectStore('takes', { keyPath: 'id' }); s.createIndex('song', 'song'); };
+      var r = indexedDB.open('songbook', 2);
+      r.onupgradeneeded = function () {
+        var d = r.result;
+        if (!d.objectStoreNames.contains('takes')) d.createObjectStore('takes', { keyPath: 'id' }).createIndex('song', 'song');
+        if (!d.objectStoreNames.contains('tracks')) d.createObjectStore('tracks', { keyPath: 'song' });
+      };
       r.onsuccess = function () { res(r.result); };
       r.onerror = function () { rej(r.error); };
     });
     dbp.catch(function () { dbp = null; });
     return dbp;
   }
-  function idbReq(mode, fn) {
+  function idbReq(mode, fn, storeName) {
+    storeName = storeName || 'takes';
     return idb().then(function (db) {
       return new Promise(function (res, rej) {
-        var t = db.transaction('takes', mode), st = t.objectStore('takes'), out = fn(st);
+        var t = db.transaction(storeName, mode), st = t.objectStore(storeName), out = fn(st);
         t.oncomplete = function () { res(out && out.result !== undefined ? out.result : undefined); };
         t.onerror = function () { rej(t.error); };
         t.onabort = function () { rej(t.error); };
@@ -572,6 +577,9 @@
   function putTake(t) { return idbReq('readwrite', function (st) { return st.put(t); }); }
   function getTake(id) { return idbReq('readonly', function (st) { return st.get(id); }); }
   function delTake(id) { return idbReq('readwrite', function (st) { return st.delete(id); }); }
+  function getTrack(id) { return idbReq('readonly', function (st) { return st.get(id); }, 'tracks'); }
+  function putTrack(t) { return idbReq('readwrite', function (st) { return st.put(t); }, 'tracks'); }
+  function delTrack(id) { return idbReq('readwrite', function (st) { return st.delete(id); }, 'tracks'); }
   function newId() { return 't' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
   function askPersist() { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {} }
   function setTakeStatus(msg, err) { var el = $('takeStatus'); el.textContent = msg || ''; el.classList.toggle('err', !!err); }
@@ -608,7 +616,7 @@
     $('recLevel').style.width = '0';
     audioSession(playing ? 'playback' : 'auto');
   }
-  function startRec() {
+  function startRec(skipCount) {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !window.MediaRecorder) {
       setTakeStatus('Recording is not available here. On an iPhone, open the app from your home screen, or use "Add a recording file".', true);
       return;
@@ -638,7 +646,7 @@
         setTakeStatus('Recording. Tap the button again to stop.');
         recTimer = setInterval(function () { $('recTime').textContent = fmtDur((Date.now() - recT0) / 1000); }, 250);
       };
-      if ($('countIn').checked && c) {
+      if (!skipCount && $('countIn').checked && c) {
         var beat = 60 / state.bpm, t0 = c.currentTime + 0.1;
         for (var i = 0; i < 4; i++) clickAt(t0 + i * beat, i === 0, false);
         var n = 0;
@@ -658,6 +666,7 @@
     if (recStarting && !recording) { recStarting = false; paintRec(); cleanupStream(); $('recTime').textContent = '0:00'; setTakeStatus('Recording cancelled.'); return; }
     if (!recording || !rec) return;
     recording = false; paintRec();
+    if (recWithBacking) { var bp = player(); if (bp) bp.pause(); recWithBacking = false; }
     try { rec.stop(); } catch (e) { saveRecording(); }
   }
   function saveRecording() {
@@ -756,6 +765,147 @@
       return putTake({ id: newId(), song: songId, data: buf, type: type, kind: /^video/.test(type) ? 'video' : 'audio', size: buf.byteLength, duration: 0, note: $('takeNote').value.trim().slice(0, 200) || file.name.slice(0, 120), createdAt: Date.now() });
     }).then(function () { askPersist(); $('takeNote').value = ''; setTakeStatus('Recording added.'); renderTakes(); })
       .catch(function () { setTakeStatus('That file could not be added. The phone may be out of storage.', true); });
+  }
+
+  /* ---------- backing track: an audio file on the phone, or a YouTube video ---------- */
+  var bt = { kind: null, audio: null, url: null, yt: null, ytReady: false, ytId: null, a: null, b: null, loop: false, poll: 0, song: null };
+  function btKey(k) { return sk('bt:' + k); }
+  function setBtStatus(msg, err) { var el = $('btStatus'); el.textContent = msg || ''; el.classList.toggle('err', !!err); }
+  function parseYt(u) {
+    u = String(u || '').trim();
+    var m = /(?:youtu\.be\/|youtube(?:-nocookie)?\.com\/(?:watch\?(?:[^#]*&)?v=|embed\/|shorts\/|live\/|v\/))([\w-]{11})/.exec(u);
+    if (m) return m[1];
+    return /^[\w-]{11}$/.test(u) ? u : null;
+  }
+  var fileP = {
+    play: function () { var p = bt.audio.play(); if (p && p.catch) p.catch(function () { setBtStatus('Tap Play to start the track.'); }); },
+    pause: function () { bt.audio.pause(); },
+    playing: function () { return !bt.audio.paused; },
+    time: function () { return bt.audio.currentTime || 0; },
+    dur: function () { return isFinite(bt.audio.duration) ? bt.audio.duration : 0; },
+    seek: function (t) { try { bt.audio.currentTime = Math.max(0, t); } catch (e) {} },
+    rate: function (r) { bt.audio.preservesPitch = true; bt.audio.webkitPreservesPitch = true; bt.audio.playbackRate = r; }
+  };
+  var ytP = {
+    play: function () { bt.yt.playVideo(); },
+    pause: function () { bt.yt.pauseVideo(); },
+    playing: function () { return bt.yt.getPlayerState && bt.yt.getPlayerState() === 1; },
+    time: function () { return (bt.yt.getCurrentTime && bt.yt.getCurrentTime()) || 0; },
+    dur: function () { return (bt.yt.getDuration && bt.yt.getDuration()) || 0; },
+    seek: function (t) { bt.yt.seekTo(Math.max(0, t), true); },
+    rate: function (r) { if (bt.yt.setPlaybackRate) bt.yt.setPlaybackRate(r); }
+  };
+  function player() { return bt.kind === 'file' && bt.audio && bt.audio.src ? fileP : (bt.kind === 'yt' && bt.ytReady ? ytP : null); }
+  function btUnload() {
+    clearInterval(bt.poll); bt.poll = 0;
+    if (bt.audio) { try { bt.audio.pause(); bt.audio.removeAttribute('src'); bt.audio.load(); } catch (e) {} }
+    if (bt.url) { try { URL.revokeObjectURL(bt.url); } catch (e) {} bt.url = null; }
+    if (bt.yt) { try { bt.yt.destroy(); } catch (e) {} bt.yt = null; }
+    bt.ytReady = false; bt.ytId = null; bt.kind = null;
+    $('ytBox').innerHTML = ''; $('ytBox').hidden = true;
+    $('btTransport').hidden = true;
+  }
+  function btShowTransport() {
+    $('btTransport').hidden = false;
+    var r = parseFloat(store.get(btKey('rate'), 1)) || 1;
+    $('btRate').value = String(r);
+    var p = player(); if (p) p.rate(r);
+    paintLoop();
+    if (!bt.poll) bt.poll = setInterval(btTick, 200);
+  }
+  function btTick() {
+    var p = player(); if (!p) return;
+    var t = p.time(), d = p.dur();
+    if (bt.loop && bt.a != null && bt.b != null && bt.b > bt.a && t >= bt.b) { p.seek(bt.a); t = bt.a; }
+    if (!btSeeking) $('btSeek').value = d ? Math.round(t / d * 1000) : 0;
+    $('btTime').textContent = fmtDur(t) + ' / ' + fmtDur(d);
+    $('btPlay').textContent = p.playing() ? 'Pause' : 'Play';
+  }
+  function paintLoop() {
+    $('btLoop').textContent = bt.loop ? 'Loop on' : 'Loop off';
+    $('btLoop').classList.toggle('on', bt.loop);
+    $('btLoop').setAttribute('aria-pressed', bt.loop ? 'true' : 'false');
+    $('btLoopInfo').textContent = (bt.a != null || bt.b != null) ? (bt.a != null ? fmtDur(bt.a) : '…') + ' to ' + (bt.b != null ? fmtDur(bt.b) : '…') : '';
+  }
+  function btSaveLoop() { store.set(btKey('loop'), { a: bt.a, b: bt.b, on: bt.loop }); }
+  function btLoad() {
+    btUnload();
+    bt.song = song.id;
+    var lp = store.get(btKey('loop'), {});
+    bt.a = typeof lp.a === 'number' ? lp.a : null; bt.b = typeof lp.b === 'number' ? lp.b : null; bt.loop = !!lp.on;
+    var src = store.get(btKey('src'), 'file');
+    document.querySelectorAll('#btSrcTabs .tab').forEach(function (b) { b.setAttribute('aria-selected', b.getAttribute('data-src') === src ? 'true' : 'false'); });
+    $('btFile').hidden = src !== 'file'; $('btYt').hidden = src !== 'yt';
+    $('btYtSearch').href = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(song.title + ' ' + (song.artist || '') + ' karaoke');
+    $('btWithRec').checked = store.get('btWithRec', true);
+    setBtStatus('');
+    if (src === 'file') {
+      $('btFileInfo').textContent = 'Loading…';
+      var id = song.id;
+      getTrack(id).then(function (t) {
+        if (id !== song.id) return;
+        if (!t) {
+          $('btFileInfo').textContent = 'No backing track for this song yet.';
+          $('btFilePickLabel').textContent = 'Add a backing track'; $('btFileRemove').hidden = true;
+          return;
+        }
+        if (!bt.audio) { bt.audio = new Audio(); bt.audio.preload = 'auto'; bt.audio.setAttribute('playsinline', ''); }
+        bt.url = URL.createObjectURL(new Blob([t.data], { type: t.type || 'audio/mpeg' }));
+        bt.audio.src = bt.url; bt.kind = 'file';
+        $('btFileInfo').textContent = t.name + ' · ' + fmtSize(t.size || 0);
+        $('btFilePickLabel').textContent = 'Replace'; $('btFileRemove').hidden = false;
+        btShowTransport();
+      }).catch(function () { $('btFileInfo').textContent = 'Backing tracks are not available in this browser.'; });
+    } else {
+      var yid = store.get(btKey('yt'), '');
+      $('btYtUrl').value = yid ? 'https://youtu.be/' + yid : '';
+      if (yid) loadYt(yid);
+    }
+  }
+  var ytApi = null;
+  function ytApiReady() {
+    if (window.YT && window.YT.Player) return Promise.resolve();
+    if (ytApi) return ytApi;
+    ytApi = new Promise(function (res, rej) {
+      var prev = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = function () { if (prev) try { prev(); } catch (e) {} res(); };
+      var s = document.createElement('script');
+      s.src = 'https://www.youtube.com/iframe_api'; s.async = true;
+      s.onerror = function () { rej(new Error('load')); };
+      document.head.appendChild(s);
+      setTimeout(function () { rej(new Error('timeout')); }, 15000);
+    });
+    ytApi.catch(function () { ytApi = null; });
+    return ytApi;
+  }
+  function loadYt(id) {
+    var forSong = song.id;
+    bt.ytId = id;
+    $('ytBox').hidden = false;
+    $('ytBox').innerHTML = '<div id="ytPlayer"></div>';
+    setBtStatus('Loading the video…');
+    ytApiReady().then(function () {
+      if (forSong !== song.id || bt.ytId !== id) return;
+      bt.yt = new YT.Player('ytPlayer', {
+        videoId: id,
+        playerVars: { playsinline: 1, rel: 0, modestbranding: 1 },
+        events: {
+          onReady: function () { if (forSong !== song.id) return; bt.ytReady = true; bt.kind = 'yt'; setBtStatus(''); btShowTransport(); },
+          onError: function () { setBtStatus('That video cannot play inside other apps. Try a different link.', true); }
+        }
+      });
+    }).catch(function () {
+      setBtStatus('YouTube could not load. Check your internet connection and try again.', true);
+    });
+  }
+  var btSeeking = false;
+  function startBackingForTake() {
+    var p = player();
+    if (!p || !$('btWithRec').checked) return false;
+    if (bt.loop && bt.a != null) p.seek(bt.a);
+    else if (p.dur() && p.time() >= p.dur() - 1) p.seek(0);
+    p.play();
+    return true;
   }
 
   /* ---------- songs from files ---------- */
@@ -870,7 +1020,7 @@
     var top = document.querySelector('.views').offsetTop;
     if (window.scrollY > top) window.scrollTo(0, top);
     if (v === 'lyrics') renderLyricsView();
-    if (v === 'takes') renderTakes();
+    if (v === 'takes') { renderTakes(); if (bt.song !== song.id) btLoad(); }
     if (v === 'more') { renderAdmin(); renderStorage(); }
   }
   function setSong(id) {
@@ -887,7 +1037,8 @@
     setBpm(store.get(sk('bpm'), song.bpm), false);
     if (!$('lyrEdit').hidden) setEditing(false);
     if (view === 'lyrics') renderLyricsView();
-    if (view === 'takes') renderTakes();
+    if (bt.song && bt.song !== song.id && !recording) { btUnload(); bt.song = null; }
+    if (view === 'takes') { renderTakes(); if (bt.song !== song.id && !recording) btLoad(); }
     setTakeStatus(recording ? 'Still recording the take you started on another song.' : '');
   }
 
@@ -956,7 +1107,65 @@
   window.addEventListener('touchmove', function () { if (scrolling) stopScroll(); }, { passive: true });
 
   // takes
-  $('recBtn').addEventListener('click', function () { (recording || recStarting) ? stopRec() : startRec(); });
+  var recWithBacking = false;
+  $('recBtn').addEventListener('click', function () {
+    if (recording || recStarting) { stopRec(); return; }
+    /* start the backing track inside this tap, which phones require for sound to play */
+    recWithBacking = startBackingForTake();
+    startRec(recWithBacking);
+  });
+
+  // backing track
+  $('btSrcTabs').addEventListener('click', function (e) {
+    var b = e.target.closest('[data-src]'); if (!b) return;
+    store.set(btKey('src'), b.getAttribute('data-src')); btLoad();
+  });
+  $('btFileInput').addEventListener('change', function () {
+    var file = this.files && this.files[0]; this.value = '';
+    if (!file) return;
+    var type = file.type || ({ mp3: 'audio/mpeg', m4a: 'audio/mp4', wav: 'audio/wav', aac: 'audio/aac' }[(file.name.split('.').pop() || '').toLowerCase()] || '');
+    if (!/^audio\//.test(type)) { setBtStatus('That file is not audio. Pick an MP3, M4A or WAV file.', true); return; }
+    setBtStatus('Adding ' + file.name + '…');
+    var id = song.id;
+    file.arrayBuffer().then(function (buf) {
+      return putTrack({ song: id, data: buf, type: type, name: file.name.slice(0, 120), size: buf.byteLength, addedAt: Date.now() });
+    }).then(function () {
+      askPersist();
+      store.set(btKey('loop'), {});
+      if (id === song.id) { btLoad(); setBtStatus('Backing track added.'); }
+    }).catch(function () { setBtStatus('That file could not be added. The phone may be out of storage.', true); });
+  });
+  $('btFileRemove').addEventListener('click', function () {
+    if (!armed(this, 'Tap again to remove')) return;
+    var id = song.id;
+    delTrack(id).then(function () { store.set(btKey('loop'), {}); if (id === song.id) { btLoad(); setBtStatus('Backing track removed.'); } });
+  });
+  $('btYtSet').addEventListener('click', function () {
+    var id = parseYt($('btYtUrl').value);
+    if (!id) { setBtStatus('That doesn\'t look like a YouTube link. It should start with youtube.com or youtu.be.', true); return; }
+    store.set(btKey('yt'), id); store.set(btKey('loop'), {});
+    btLoad();
+  });
+  $('btYtUrl').addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); $('btYtSet').click(); } });
+  $('btPlay').addEventListener('click', function () { var p = player(); if (!p) return; p.playing() ? p.pause() : p.play(); setTimeout(btTick, 60); });
+  $('btBack').addEventListener('click', function () { var p = player(); if (p) { p.seek(p.time() - 5); btTick(); } });
+  $('btRate').addEventListener('change', function () { var r = parseFloat(this.value); store.set(btKey('rate'), r); var p = player(); if (p) p.rate(r); });
+  $('btSeek').addEventListener('input', function () { btSeeking = true; var p = player(); if (p && p.dur()) $('btTime').textContent = fmtDur(this.value / 1000 * p.dur()) + ' / ' + fmtDur(p.dur()); });
+  $('btSeek').addEventListener('change', function () { var p = player(); if (p && p.dur()) p.seek(this.value / 1000 * p.dur()); btSeeking = false; btTick(); });
+  $('btSetA').addEventListener('click', function () { var p = player(); if (!p) return; bt.a = Math.round(p.time() * 10) / 10; if (bt.b != null && bt.b <= bt.a) bt.b = null; btSaveLoop(); paintLoop(); });
+  $('btSetB').addEventListener('click', function () {
+    var p = player(); if (!p) return;
+    var t = Math.round(p.time() * 10) / 10;
+    if (bt.a == null) bt.a = 0;
+    if (t <= bt.a) { setBtStatus('The loop end has to come after the loop start.', true); return; }
+    bt.b = t; bt.loop = true; setBtStatus(''); btSaveLoop(); paintLoop();
+  });
+  $('btLoop').addEventListener('click', function () {
+    if (!bt.loop && (bt.a == null || bt.b == null)) { setBtStatus('Set a loop start and end first: play to each spot and tap the button.'); return; }
+    bt.loop = !bt.loop; btSaveLoop(); paintLoop();
+    if (bt.loop) { var p = player(); if (p && (p.time() < bt.a || p.time() > bt.b)) p.seek(bt.a); }
+  });
+  $('btWithRec').addEventListener('change', function () { store.set('btWithRec', this.checked); });
   $('countIn').checked = store.get('countIn', true);
   $('countIn').addEventListener('change', function () { store.set('countIn', this.checked); });
   $('takeFile').addEventListener('change', function () { importTake(this.files && this.files[0]); this.value = ''; });
@@ -998,7 +1207,7 @@
   $('appVersion').textContent = APP_VERSION;
 
   document.addEventListener('visibilitychange', function () {
-    if (document.hidden) { stopM(); stopScroll(); if (recording) stopRec(); }
+    if (document.hidden) { stopM(); stopScroll(); if (recording) stopRec(); var bp = player(); if (bp && bt.kind === 'file') bp.pause(); }
     else if (stageOn || scrolling) wakeOn();
   });
 
