@@ -124,5 +124,39 @@ window.SONGBOOK_SONGS = [
         { t: 'GuitarPlayerBox chart', u: 'https://www.guitarplayerbox.com/tabs/Pearl-Jam/Black/449', d: 'Key of E, shows the long outro.' },
         { t: 'Musicnotes sheet music', u: 'https://www.musicnotes.com/sheetmusic/pearl-jam/black/MN0138329', d: 'Licensed piano, vocal and guitar edition for purchase.' }] }
     ]
+  },
+  {
+    id: 'sbm-swj', short: 'Stand By Me', title: 'Stand By Me (Live at the Print Shop)', artist: 'Stephen Wilson Jr.', year: 2024,
+    writers: 'Ben E. King, Jerry Leiber & Mike Stoller',
+    key: 0, bpm: 106, time: '4/4', tuning: 'Standard', lyricsKey: 0,
+    sections: [
+      { name: 'Intro', note: 'Sets up the sound of the whole cover: the home chord turns minor (Cm7) for a moment before resolving.', lines: [['I', 'vi', 'im7', 'I', 'IV', 'V'], ['I', 'vi', 'I', 'vi']] },
+      { name: 'Verse 1', note: 'Starts on C and Am, then walks down through G and F and lands on Am.', lines: [['I', 'vi'], ['vi', 'V', 'IV', 'V', 'vi']] },
+      { name: 'Chorus', note: 'Rocks between Am and C. Watch the Cm7 on the second line; it is the signature move of this version.', lines: [['vi', 'I', 'vi', 'I', 'IV', 'V', 'vi'], ['vi', 'I', 'im7', 'vi', 'I', 'IV', 'V', 'I']] },
+      { name: 'Verse 2', note: 'Shorter than the first verse.', lines: [['I', 'vi'], ['I', 'IV', 'V', 'vi']] },
+      { name: 'Chorus 2', note: 'Same as the first chorus, with an extra Am at the end leading into the next part.', lines: [['vi', 'I', 'vi', 'I', 'IV', 'V', 'vi'], ['vi', 'I', 'im7', 'vi', 'I', 'IV', 'V', 'I', 'vi']] },
+      { name: 'Turn', note: 'A short passage the charts leave unlabeled. It works like a bridge back into the last verse.', lines: [['I', 'im7', 'IV', 'V', 'vi', 'I']] },
+      { name: 'Verse 3', note: 'Resolves to C this time instead of Am.', lines: [['I', 'vi', 'V', 'IV', 'V', 'I']] },
+      { name: 'Outro', note: 'Long final run. Hold the F for an extra beat near the end, then finish on C.', lines: [['I', 'vi', 'I', 'IV', 'V', 'vi'], ['I', 'vi', 'I', 'IV', 'IV', 'V', 'vi', 'I']] }
+    ],
+    chartNote: 'Chords from the GuitarTabsExplorer and GoTabs charts of the live acoustic version, which agree with each other (they may share one source). Key of C and about 106 BPM from Karaoke Version, which notes the tempo varies because it is a live recording, so treat the metronome as a guide. This is a reworked cover: the Cm7 and the Am-led verses are what set it apart from the familiar Ben E. King version. Trust the record and your ear.',
+    patNote: 'No source gives his strum pattern. Try this for the intro and first verse, then the steady ballad feel as it builds.',
+    lyricsUrl: 'https://www.gotabs.com/stephen-wilson-jr/stand-by-me-chords',
+    lyricsHelp: 'That chart is in C, the same key as the record. Paste it as it is; chords on their own line above the words are recognized.',
+    links: [
+      { h: 'The record', items: [
+        { t: 'Live at the Print Shop (YouTube)', u: 'https://www.youtube.com/watch?v=9kn7E-OauJI', d: 'The version this chart follows. Released November 2024.' },
+        { t: 'CMA Awards performance', u: 'https://www.youtube.com/results?search_query=Stephen+Wilson+Jr+Stand+By+Me+CMA+Awards', d: 'A bigger live performance of his arrangement.' },
+        { t: 'Ben E. King original (1961)', u: 'https://www.youtube.com/results?search_query=Ben+E+King+Stand+By+Me+1961', d: 'Hear what he changed.' }] },
+      { h: 'Backing tracks', items: [
+        { t: 'Karaoke Version backing track', u: 'https://www.karaoke-version.com/karaoke/stephen-wilson-jr/stand-by-me-live-at-the-print-shop.html', d: 'Licensed track of this exact version, key of C. About $2.99. Download the MP3 and load it on the Play tab.' },
+        { t: 'Karaoke on YouTube', u: 'https://www.youtube.com/results?search_query=Stephen+Wilson+Jr+Stand+By+Me+karaoke', d: 'Check that it is his version, not the original.' }] },
+      { h: 'Lessons', items: [
+        { t: 'Guitar lessons', u: 'https://www.youtube.com/results?search_query=Stephen+Wilson+Jr+Stand+By+Me+guitar+lesson' },
+        { t: 'Strumming pattern videos', u: 'https://www.youtube.com/results?search_query=Stephen+Wilson+Jr+Stand+By+Me+strumming' }] },
+      { h: 'Charts', items: [
+        { t: 'GoTabs chart (key of C)', u: 'https://www.gotabs.com/stephen-wilson-jr/stand-by-me-chords', d: 'Chords with lyrics, live acoustic version.' },
+        { t: 'GuitarTabsExplorer chart', u: 'https://guitartabsexplorer.com/stephen-wilson-jr./stand-by-me-acoustic-live-chords', d: 'Same chords, rated intermediate.' }] }
+    ]
   }
 ];
