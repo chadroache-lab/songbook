@@ -158,5 +158,40 @@ window.SONGBOOK_SONGS = [
         { t: 'GoTabs chart (key of C)', u: 'https://www.gotabs.com/stephen-wilson-jr/stand-by-me-chords', d: 'Chords with lyrics, live acoustic version.' },
         { t: 'GuitarTabsExplorer chart', u: 'https://guitartabsexplorer.com/stephen-wilson-jr./stand-by-me-acoustic-live-chords', d: 'Same chords, rated intermediate.' }] }
     ]
+  },
+  {
+    id: 'wondering-why', short: 'Wondering Why', title: 'Wondering Why', artist: 'The Red Clay Strays', year: 2022,
+    writers: 'Brandon Coleman, Drew Nix & Dan Couch',
+    key: 4, bpm: 50, time: '6/8 (slow, assumed)', tuning: 'Standard', alt: 'Capo 2, D shapes (D, Em, G, A)', lyricsKey: 2,
+    sections: [
+      { name: 'Verse 1', note: 'Capo 2 shapes: D, Em, then G, A, D, A. Unhurried, a slow rocking six.', lines: [['I', 'ii'], ['IV', 'V', 'I', 'V']] },
+      { name: 'Chorus', note: 'Same four chords. The last line stops on the home chord before the next verse.', lines: [['I', 'ii'], ['IV', 'V', 'I', 'V'], ['I', 'ii'], ['IV', 'V', 'I']] },
+      { name: 'Verse 2', note: 'Same changes as Verse 1.', lines: [['I', 'ii'], ['IV', 'V', 'I', 'V']] },
+      { name: 'Chorus 2', note: 'Same as the first chorus.', lines: [['I', 'ii'], ['IV', 'V', 'I', 'V'], ['I', 'ii'], ['IV', 'V', 'I']] },
+      { name: 'Solo', note: 'Rocks between G and D/F# (D with F# in the bass, or just play D), then settles on Em and A. Hold each one for a full bar or more and let it build.', lines: [['IV', 'I', 'IV', 'I'], ['IV'], ['ii'], ['V']] },
+      { name: 'Verse 3', note: 'Same changes, one last time before the final chorus.', lines: [['I', 'ii'], ['IV', 'V', 'I', 'V']] },
+      { name: 'Final chorus', note: 'Same as the other choruses, then the title line again and a long finish on the home chord.', lines: [['I', 'ii'], ['IV', 'V', 'I', 'V'], ['I', 'ii'], ['IV', 'V', 'I'], ['I']] }
+    ],
+    chartNote: 'Sections follow the chart you supplied (capo 2, D-shape chords), which sounds in E. Key of E is confirmed by Klangio, Karaoke Version and PaidTabs. Tempo sources disagree: Klangio and Chordu analyse about 149-150 BPM, Karaoke Version says around 50 and variable, and PaidTabs lists 74. Those fit one slow 6/8 feel with the dotted quarter near 50, so the metronome is set to 50 and you should count 1-2-3-4-5-6 (or 1-2 with a lilt). Chordu\'s and Klangio\'s recording analyses also hear a passage on F#, G# and G#m that your chart does not show, and some charts play the home chord as D/F# in the solo. Trust the record and your ear.',
+    patNote: 'The strum patterns below are general 4/4 feels, not a transcription. This song is a slow six, so use them only as a starting point and follow the record.',
+    lyricsHelp: 'Your chart is written in D (capo 2 shapes). Paste it on the Lyrics tab and set "Chart written in" to D; the app moves the chords to your key and capo. Chords in brackets like [D] and chords on their own line above the words are recognized.',
+    links: [
+      { h: 'The record', items: [
+        { t: 'Official lyric video (YouTube)', u: 'https://www.youtube.com/watch?v=JbxfFKvoAU4', d: 'The studio recording from Moment of Truth.' },
+        { t: 'Live AF session', u: 'https://www.youtube.com/results?search_query=The+Red+Clay+Strays+Wondering+Why+Live+AF', d: 'The live version that went viral in 2023.' },
+        { t: 'Klangio chord analysis', u: 'https://songs.klang.io/en/s/The%20Red%20Clay%20Strays/Wondering%20Why/GhcMmaUPtrk', d: 'Machine analysis: key of E, about 150 BPM.' }] },
+      { h: 'Backing tracks', items: [
+        { t: 'Karaoke Version backing track', u: 'https://www.karaoke-version.com/mp3-backingtrack/the-red-clay-strays/wondering-why.html', d: 'Licensed track in the original key of E. Starts a cappella.' },
+        { t: 'Karaoke on YouTube', u: 'https://www.youtube.com/results?search_query=Wondering+Why+Red+Clay+Strays+karaoke', d: 'Vocals removed. Check the key in the title.' },
+        { t: 'Instrumental', u: 'https://www.youtube.com/results?search_query=Wondering+Why+Red+Clay+Strays+instrumental' }] },
+      { h: 'Lessons', items: [
+        { t: 'SongNotes lesson', u: 'https://songnotes.net/lessons/557/', d: 'Chords, strumming, power chords and an easy capo 2 version (D, Em, G, A).' },
+        { t: 'Guitar lessons', u: 'https://www.youtube.com/results?search_query=Wondering+Why+Red+Clay+Strays+guitar+lesson' },
+        { t: 'Acoustic and fingerpicking', u: 'https://www.youtube.com/results?search_query=Wondering+Why+Red+Clay+Strays+acoustic+cover+guitar' }] },
+      { h: 'Charts', items: [
+        { t: 'Chordu jam-along (key of E)', u: 'https://chordu.com/chords-tabs-the-red-clay-strays-wondering-why-official-lyric-video--id_JbxfFKvoAU4', d: 'Chords scroll in time with the lyric video. About 149 BPM.' },
+        { t: 'Songsterr tabs', u: 'https://www.songsterr.com/a/wsa/the-red-clay-strays-tabs-a100585?inst=guitar', d: 'Full tablature, including the resynched and acoustic versions.' },
+        { t: 'Songfacts', u: 'https://www.songfacts.com/facts/the-red-clay-strays/wondering-why', d: 'Background on the song.' }] }
+    ]
   }
 ];
