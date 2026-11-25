@@ -1,6 +1,6 @@
 /* Open Mic Songbook service worker: keeps the app working offline. Bump VERSION on every release. */
-var VERSION = 'songbook-1.1.2';
-var SHELL = ['./', 'index.html', 'app.js', 'songs.js', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
+var VERSION = 'songbook-1.2.0';
+var SHELL = ['./', 'index.html', 'app.js', 'songs.js', 'riffs.js', 'manifest.webmanifest', 'icon-180.png', 'icon-192.png', 'icon-512.png'];
 var FONT_CACHE = 'songbook-fonts';
 
 self.addEventListener('install', function (e) {

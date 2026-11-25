@@ -228,6 +228,79 @@ body.stage .sheet{border:0;background:transparent;padding-inline:0}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:40;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:.95rem;max-width:calc(100% - 32px);box-shadow:0 4px 18px rgba(0,0,0,.25)}
 .toast button{margin-left:10px;font:inherit;font-weight:700;background:none;border:0;color:var(--amber);cursor:pointer;padding:0}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+
+/* riff lab */
+body.v-riffs .dock{display:none}
+#view-riffs{
+  --rl-wood:#5a3a28; --rl-fret:#bdb5a8; --rl-string:#d9dde2; --rl-marker:#e7d9c0;
+  --rl-dot:#f6efdf; --rl-dot-ink:#2a2118; --rl-dot-line:#bda98a; --rl-ring:#1fb8cc;
+}
+@media (prefers-color-scheme: dark){ #view-riffs{ --rl-wood:#33231a; --rl-fret:#7d7466; --rl-string:#c9ced4; --rl-marker:#8a7a63; } }
+.rl-controls{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px 14px;align-items:end}
+.rl-field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.rl-field label,.rl-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.rl-field select{width:100%;min-width:0}
+.rl-tempo{display:flex;align-items:center;gap:10px}
+.rl-tempo output{font-family:var(--mono);font-weight:600;min-width:3.2ch;text-align:right}
+.rl-play{width:100%;white-space:nowrap}
+.rl-mix{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--line);align-items:center}
+.rl-mix label{display:flex;align-items:center;gap:6px;font-size:.95rem;cursor:pointer;min-height:36px}
+.rl-mix input[type=checkbox]{accent-color:var(--amber);width:18px;height:18px}
+.rl-vol{display:flex;align-items:center;gap:8px;margin-left:auto}
+.rl-vol input{width:110px}
+.rl-strip{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:8px}
+.rl-bar{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:8px 6px;cursor:pointer;display:flex;flex-direction:column;align-items:center;font:inherit;min-height:44px}
+.rl-num{font-size:.7rem;color:var(--muted);font-weight:600;letter-spacing:.04em}
+.rl-nm{font-family:var(--mono);font-weight:600;font-size:1.2rem;line-height:1.25}
+.rl-bar.on{background:var(--rain);border-color:var(--rain);color:var(--card)}
+.rl-bar.on .rl-num{color:inherit;opacity:.85}
+.rl-chordinfo{margin:10px 0 0;font-size:.95rem}
+.rl-chordinfo b{font-family:var(--mono)}
+.rl-opts{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-bottom:12px}
+.rl-seg{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+.rl-seg .rl-lbl{margin-right:4px}
+.rl-seg button{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;padding:5px 12px;font:inherit;font-size:.88rem;cursor:pointer;font-weight:600;min-height:36px}
+.rl-seg button[aria-pressed="true"]{background:var(--amber);color:var(--on-amber);border-color:var(--amber)}
+.rl-board-wrap{overflow-x:auto;border-radius:8px;-webkit-overflow-scrolling:touch}
+#rl-board{display:block;min-width:760px;width:100%;height:auto}
+#rl-board text{font-family:var(--body);user-select:none;-webkit-user-select:none}
+#rl-board .n{cursor:pointer}
+#rl-board .n circle.d{fill:var(--rl-dot);stroke:var(--rl-dot-line);stroke-width:1.5}
+#rl-board .n text{fill:var(--rl-dot-ink);font-size:11.5px;font-weight:600}
+#rl-board .n.root circle.d{fill:var(--amber);stroke:var(--amber)}
+#rl-board .n.root text{fill:var(--on-amber)}
+#rl-board .n.out circle.d{stroke-dasharray:3 2}
+#rl-board .n.dim{opacity:.22}
+#rl-board .n circle.ring{fill:none;stroke:var(--rl-ring);stroke-width:0;transition:stroke-width .08s}
+#rl-board .n.chord circle.ring{stroke-width:4}
+#rl-board .n.dim.chord{opacity:.5}
+#rl-board .n.hit circle.d{stroke:#fff;stroke-width:3}
+#rl-board .n.hit{filter:drop-shadow(0 0 5px var(--amber))}
+#rl-board .n.xtra{display:none}
+#rl-board .n.xtra circle.d{stroke-dasharray:3 2}
+#rl-board.view-chord .n.xtra.chord{display:inline}
+#rl-board.view-chord .n:not(.chord){opacity:.08;pointer-events:none}
+#rl-board.view-chord .n.chord{opacity:1}
+#rl-board.view-chord .n.dim.chord{opacity:.45}
+#rl-board .badge rect{fill:var(--ink)}
+#rl-board .badge text{fill:var(--bg);font-size:9.5px;font-weight:700}
+.rl-legend{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:12px;font-size:.85rem;color:var(--muted);align-items:center}
+.rl-legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:6px;border:1.5px solid var(--rl-dot-line);background:var(--rl-dot)}
+.rl-legend i.r{background:var(--amber);border-color:var(--amber)}
+.rl-legend i.c{border:3.5px solid var(--rl-ring)}
+.rl-tabs{display:flex;flex-direction:column;gap:14px}
+.rl-bt{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:4px}
+.rl-tab{display:grid;grid-template-columns:24px repeat(8,minmax(0,1fr));gap:3px;font-family:var(--mono);max-width:640px}
+.rl-hd{font-size:.72rem;color:var(--muted);text-align:center;padding-bottom:2px}
+.rl-sl{font-size:.8rem;color:var(--muted);display:flex;align-items:center;justify-content:center;font-weight:600}
+.rl-cell{border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:5px;font:inherit;font-weight:600;font-size:.95rem;padding:7px 0;cursor:pointer;text-align:center;min-width:0}
+.rl-cell.has{background:var(--card);color:var(--amber-ink)}
+.rl-cell.sel{outline:2px solid var(--ink);outline-offset:-2px}
+.rl-cell.cur{background:var(--rain);color:var(--card);border-color:var(--rain)}
+.rl-tools{display:flex;flex-wrap:wrap;gap:8px 10px;margin-top:12px;align-items:center}
+.rl-tools select{min-width:190px}
+@media (max-width:520px){.rl-vol{margin-left:0}}
+@media (prefers-reduced-motion:reduce){#rl-board .n circle.ring{transition:none}}
 </style>
 </head>
 <body>
@@ -247,6 +320,7 @@ body.stage .sheet{border:0;background:transparent;padding-inline:0}
   <button class="vtab" role="tab" type="button" data-view="chart" aria-selected="true">Chart</button>
   <button class="vtab" role="tab" type="button" data-view="lyrics" aria-selected="false">Lyrics</button>
   <button class="vtab" role="tab" type="button" data-view="takes" aria-selected="false">Play<span class="rec-dot" id="recDot" hidden></span></button>
+  <button class="vtab" role="tab" type="button" data-view="riffs" aria-selected="false">Riffs</button>
   <button class="vtab" role="tab" type="button" data-view="prep" aria-selected="false">Prep</button>
   <button class="vtab" role="tab" type="button" data-view="more" aria-selected="false">More</button>
 </div></nav>
@@ -409,6 +483,90 @@ body.stage .sheet{border:0;background:transparent;padding-inline:0}
   </section>
 </div>
 
+<!-- RIFFS -->
+<div id="view-riffs" hidden>
+  <section class="block" style="padding-top:16px">
+    <h2>Riff Lab</h2>
+    <p class="sub">Pick a key and a scale, start a backing track, and play the lit-up notes. Tap notes on the fretboard to write your own riff.</p>
+    <div class="panel">
+      <div class="rl-controls">
+        <div class="rl-field"><label for="rl-key">Key</label><select id="rl-key"></select></div>
+        <div class="rl-field"><label for="rl-scale">Scale</label><select id="rl-scale"></select></div>
+        <div class="rl-field"><label for="rl-prog">Chord progression</label><select id="rl-prog"></select></div>
+        <div class="rl-field"><label for="rl-feel">Feel</label><select id="rl-feel"><option value="straight">Straight 8ths</option><option value="shuffle">Shuffle</option></select></div>
+        <div class="rl-field"><span class="rl-lbl">Tempo (BPM)</span>
+          <div class="rl-tempo"><input type="range" id="rl-bpm" min="60" max="160" step="1" value="100" aria-label="Riff Lab tempo in beats per minute"><output id="rl-bpmout" for="rl-bpm">100</output></div>
+        </div>
+        <div class="rl-field"><button class="btn primary rl-play" id="rl-play" type="button"><span id="rl-playicon" aria-hidden="true">&#9654;</span><span id="rl-playtxt">Play backing track</span></button></div>
+      </div>
+      <div class="rl-mix" role="group" aria-label="Mixer">
+        <span class="rl-lbl">Mix</span>
+        <label><input type="checkbox" id="rl-mDrums" checked> Drums</label>
+        <label><input type="checkbox" id="rl-mBass" checked> Bass</label>
+        <label><input type="checkbox" id="rl-mChords" checked> Chords</label>
+        <label><input type="checkbox" id="rl-mRiff" checked> My riff</label>
+        <div class="rl-vol"><label for="rl-vol" class="rl-lbl" style="margin:0">Volume</label><input type="range" id="rl-vol" min="0" max="100" value="70"></div>
+      </div>
+      <p style="margin:12px 0 0"><button class="btn sm" id="rl-match" type="button" hidden></button></p>
+      <p class="fine">No sound on an iPhone? Turn off silent mode with the switch or Action button and turn the volume up. The songbook metronome stops while you are here.</p>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Chords, one per bar</h2>
+    <p class="sub">Tap a chord to see its notes on the fretboard.</p>
+    <div class="panel">
+      <div class="rl-strip" id="rl-strip"></div>
+      <p class="rl-chordinfo" id="rl-chordinfo"></p>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Fretboard</h2>
+    <p class="sub">Tap any note to hear it and add it to your riff. Scroll sideways on a phone.</p>
+    <div class="panel">
+      <div class="rl-opts">
+        <div class="rl-seg" id="rl-views" role="group" aria-label="What to show"><span class="rl-lbl">Show</span>
+          <button type="button" data-v="scale" aria-pressed="true">Scale</button>
+          <button type="button" data-v="chord" aria-pressed="false">Chord tones only</button>
+        </div>
+        <div class="rl-seg" id="rl-positions" role="group" aria-label="Position"><span class="rl-lbl">Position</span></div>
+        <div class="rl-seg" id="rl-labels" role="group" aria-label="Note labels"><span class="rl-lbl">Labels</span>
+          <button type="button" data-l="names" aria-pressed="true">Note names</button>
+          <button type="button" data-l="ivs" aria-pressed="false">Degrees</button>
+          <button type="button" data-l="role" aria-pressed="false">Chord role</button>
+          <button type="button" data-l="none" aria-pressed="false">None</button>
+        </div>
+      </div>
+      <div class="rl-board-wrap"><svg id="rl-board" viewBox="0 0 1000 248" role="img" aria-label="Guitar fretboard showing the selected scale"></svg></div>
+      <div class="rl-legend">
+        <span><i class="r"></i>Root note</span>
+        <span><i></i>Scale note</span>
+        <span><i class="c"></i>Note in the current chord (aim for these)</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2>Your riff</h2>
+    <p class="sub">8th notes. An 8-step riff repeats every bar; a 16-step riff covers two bars. Tap a column, then tap a note on the fretboard.</p>
+    <div class="panel">
+      <div class="rl-seg" id="rl-rlen" role="group" aria-label="Riff length" style="margin-bottom:12px"><span class="rl-lbl">Length</span>
+        <button type="button" data-n="8" aria-pressed="true">8 steps, 1 bar</button>
+        <button type="button" data-n="16" aria-pressed="false">16 steps, 2 bars</button>
+      </div>
+      <div class="rl-tabs" id="rl-tab" role="group" aria-label="Riff tab"></div>
+      <div class="rl-tools">
+        <select id="rl-recipe" aria-label="Load a riff recipe"></select>
+        <button class="btn sm" type="button" id="rl-rest">Rest</button>
+        <button class="btn sm" type="button" id="rl-clearStep">Clear step</button>
+        <button class="btn sm" type="button" id="rl-clearAll">Clear all</button>
+      </div>
+    </div>
+    <p class="fine">A good way to practise: load a recipe, land on the ringed notes when the chord changes, then change one thing (the last note, the position, the key).</p>
+  </section>
+</div>
+
 <!-- PREP -->
 <div id="view-prep" hidden>
   <section class="block" style="padding-top:16px">
@@ -481,6 +639,7 @@ body.stage .sheet{border:0;background:transparent;padding-inline:0}
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script src="songs.js"></script>
+<script src="riffs.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

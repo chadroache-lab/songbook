@@ -1,7 +1,7 @@
 /* Open Mic Songbook app. Everything the person adds (lyrics, ticks, settings, recordings) stays on this device. */
 (function () {
   'use strict';
-  var APP_VERSION = '1.1.2';
+  var APP_VERSION = '1.2.0';
 
   /* ---------- small helpers ---------- */
   function $(id) { return document.getElementById(id); }
@@ -1012,11 +1012,13 @@
   /* ---------- views and song switching ---------- */
   var view = store.get('view', 'chart');
   function setView(v) {
-    if (['chart', 'lyrics', 'takes', 'prep', 'more'].indexOf(v) < 0) v = 'chart';
+    if (['chart', 'lyrics', 'takes', 'riffs', 'prep', 'more'].indexOf(v) < 0) v = 'chart';
     if (v !== 'lyrics') { stopScroll(); if (stageOn) setStage(false); }
+    if (v === 'riffs') stopM(); else if (window.RiffLab) window.RiffLab.hide();
+    document.body.classList.toggle('v-riffs', v === 'riffs');
     view = v; store.set('view', v);
     document.querySelectorAll('.vtab').forEach(function (b) { b.setAttribute('aria-selected', b.getAttribute('data-view') === v ? 'true' : 'false'); });
-    ['chart', 'lyrics', 'takes', 'prep', 'more'].forEach(function (n) { $('view-' + n).hidden = n !== v; });
+    ['chart', 'lyrics', 'takes', 'riffs', 'prep', 'more'].forEach(function (n) { $('view-' + n).hidden = n !== v; });
     var top = document.querySelector('.views').offsetTop;
     if (window.scrollY > top) window.scrollTo(0, top);
     if (v === 'lyrics') renderLyricsView();
@@ -1035,6 +1037,7 @@
     state.pat = store.get(sk('pat'), 0);
     renderSongTabs(); renderHeader(); renderKeySelect(); renderMap(); renderShapes(); renderPattern(); renderPresets(); renderPrep();
     setBpm(store.get(sk('bpm'), song.bpm), false);
+    if (window.RiffLab) window.RiffLab.song(song);
     if (!$('lyrEdit').hidden) setEditing(false);
     if (view === 'lyrics') renderLyricsView();
     if (bt.song && bt.song !== song.id && !recording) { btUnload(); bt.song = null; }

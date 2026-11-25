@@ -7,6 +7,7 @@ For each song it shows:
 - **Chart:** key and capo selector, a song map in chords and Nashville numbers, strum patterns that light up with the metronome, chord diagrams and a metronome.
 - **Lyrics:** paste your own lyrics and chords. Chords in `[C]` brackets or on their own line above the words are both recognized and moved to your key and capo. Includes auto-scroll and a Stage view for performing.
 - **Play:** load a backing track for each song, either an audio file you own (stored on the phone, plays offline) or a YouTube link. Slow it to 0.75× or 0.85×, loop a section, and have it start when you record. Record a run-through with the phone's microphone, with an optional count-in. Play takes back at slower speed, add notes, and share them.
+- **Riffs:** Riff Lab. A fretboard that lights up the notes of any key and scale, backing tracks over 17 chord progressions, a chord-tones-only view for soloing, and a riff builder (8 or 16 steps, with ready-made recipes). It can match the key and tempo of the song you have open.
 - **Prep:** a practice plan, listening links and open mic checklists.
 
 ## Install on an iPhone
