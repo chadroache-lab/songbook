@@ -5,6 +5,8 @@
      short     name shown on the set-list tab
      title, artist, year, writers
      key       recorded key as a pitch class: C=0 C#=1 D=2 Eb=3 E=4 F=5 F#=6 G=7 Ab=8 A=9 Bb=10 B=11
+     minor     optional: true for a minor-key song. Degrees are then relative to the minor home
+               chord (i = Bm in B minor, bVII = A, bVI = G, bIII = D, V7 = F#7).
      bpm, time, tuning, alt (optional: another way to play it)
      lyricsKey key the linked lyrics-and-chords chart is written in (same numbers as key)
      sections  [{name, note, lines:[[degree, ...], ...]}]
@@ -192,6 +194,39 @@ window.SONGBOOK_SONGS = [
         { t: 'Chordu jam-along (key of E)', u: 'https://chordu.com/chords-tabs-the-red-clay-strays-wondering-why-official-lyric-video--id_JbxfFKvoAU4', d: 'Chords scroll in time with the lyric video. About 149 BPM.' },
         { t: 'Songsterr tabs', u: 'https://www.songsterr.com/a/wsa/the-red-clay-strays-tabs-a100585?inst=guitar', d: 'Full tablature, including the resynched and acoustic versions.' },
         { t: 'Songfacts', u: 'https://www.songfacts.com/facts/the-red-clay-strays/wondering-why', d: 'Background on the song.' }] }
+    ]
+  },
+  {
+    id: 'hotel-california', short: 'Hotel California', title: 'Hotel California', artist: 'Eagles', year: 1977,
+    writers: 'Don Felder, Don Henley & Glenn Frey',
+    key: 11, minor: true, bpm: 74, time: '4/4', tuning: 'Standard', alt: 'Capo 7, Em shapes (or capo 2, Am shapes)', lyricsKey: 9,
+    sections: [
+      { name: 'Intro', note: 'The famous eight-chord cycle, played twice. Each chord gets one bar. On the record this is the roughly one-minute guitar intro.', lines: [['i', 'V7', 'bVII', 'IV'], ['bVI', 'bIII', 'iv', 'V7'], ['i', 'V7', 'bVII', 'IV'], ['bVI', 'bIII', 'iv', 'V7']] },
+      { name: 'Verse', note: 'The same eight-chord cycle runs under every verse, usually twice per verse. Keep it steady and let the vocal sit on top.', lines: [['i', 'V7', 'bVII', 'IV'], ['bVI', 'bIII', 'iv', 'V7'], ['i', 'V7', 'bVII', 'IV'], ['bVI', 'bIII', 'iv', 'V7']] },
+      { name: 'Chorus', note: 'Opens on G and D, which brightens the song for a moment, then falls back to Bm. Lift the dynamics here.', lines: [['bVI', 'bIII', 'V7', 'i'], ['bVI', 'bIII', 'iv', 'V7']] },
+      { name: 'Later verses and choruses', note: 'The song alternates verse and chorus a few more times with the same chords. Follow the chart you paste on the Lyrics tab for the exact order.', lines: [['i', 'V7', 'bVII', 'IV'], ['bVI', 'bIII', 'iv', 'V7']] },
+      { name: 'Outro solo', note: 'The two-guitar solo, just over two minutes, runs over the same eight-chord cycle many times. Solo, keep cycling the chords and fade, or stop after two or three passes on Bm.', lines: [['i', 'V7', 'bVII', 'IV'], ['bVI', 'bIII', 'iv', 'V7']] }
+    ],
+    chartNote: 'Key of B minor and about 74 BPM from Hooktheory and Karaoke Version, which notes the tempo varies slightly. The chord cycle (Bm, F#, A, E, G, D, Em, F#) matches the Ultimate Guitar and GuitarTwitt charts; many charts write F#7, and Hooktheory hears E9 and A(add9) colors. Don Felder said B minor is not a fun key to play guitar in, which is why most players use a capo: capo 7 with Em-shape chords, or capo 2 with Am-shape chords. Trust the record and your ear.',
+    patNote: 'GuitarTwitt gives a strum of D U U U UDU DU. The record opens with picked guitar, so this or the arpeggio feel suits the intro and verses.',
+    lyricsUrl: 'https://guitartwitt.com/hotel-california-chords-guitar-eagles',
+    lyricsHelp: 'That chart uses capo 2 with Am-shape chords, and "Chart written in" is already set to match. With no capo the app shows the real chords (Bm and so on); set the capo to 2 on the Chart tab to see the chart\'s own Am shapes.',
+    links: [
+      { h: 'The record', items: [
+        { t: 'Eagles, Hotel California (studio)', u: 'https://www.youtube.com/results?search_query=Eagles+Hotel+California+2013+remaster', d: 'The version this chart follows.' },
+        { t: 'Hell Freezes Over (1994, acoustic)', u: 'https://www.youtube.com/results?search_query=Eagles+Hotel+California+Hell+Freezes+Over', d: 'The slower acoustic arrangement. Closest to a solo open mic version.' },
+        { t: 'Behind the song (American Songwriter)', u: 'https://americansongwriter.com/behind-the-song-the-eagles-hotel-california/', d: 'How Don Felder wrote the music and why it ended up in B minor.' }] },
+      { h: 'Backing tracks', items: [
+        { t: 'Karaoke Version backing track', u: 'https://www.karaoke-version.com/mp3-backingtrack/eagles/hotel-california.html', d: 'Licensed MP3 in B minor, about $1.99, 6:40. Load it on the Play tab.' },
+        { t: 'Short (45 edit) backing track', u: 'https://www.karaoke-version.com/mp3-backingtrack/eagles/hotel-california-45-edit.html', d: 'Shorter version, handy for an open mic time slot.' },
+        { t: 'Guitar backing track (no guitar)', u: 'https://www.karaoke-version.com/guitar-backing-track/eagles/hotel-california.html', d: 'The full band with the guitar removed, so you play the guitar part.' }] },
+      { h: 'Lessons', items: [
+        { t: 'Don Felder lesson (Guitar World)', u: 'https://www.guitarworld.com/lessons/don-felders-hotel-california-guitar-lesson-video', d: 'The writer of the music shows how to play it.' },
+        { t: 'Hooktheory TheoryTab', u: 'https://hooktheory.com/theorytab/view/eagles/hotel-california', d: 'Chords and melody synced to the song.' },
+        { t: 'Guitar lessons on YouTube', u: 'https://www.youtube.com/results?search_query=Hotel+California+acoustic+guitar+lesson+capo+7' }] },
+      { h: 'Charts', items: [
+        { t: 'GuitarTwitt chart (capo 2)', u: 'https://guitartwitt.com/hotel-california-chords-guitar-eagles', d: 'Am-shape chords with a strum pattern.' },
+        { t: 'Ultimate Guitar chords', u: 'https://tabs.ultimate-guitar.com/tab/eagles/hotel-california-chords-1092238', d: 'Open Bm-key chart. Read the comments for fixes.' }] }
     ]
   }
 ];

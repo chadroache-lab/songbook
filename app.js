@@ -1,7 +1,7 @@
 /* Open Mic Songbook app. Everything the person adds (lyrics, ticks, settings, recordings) stays on this device. */
 (function () {
   'use strict';
-  var APP_VERSION = '1.2.0';
+  var APP_VERSION = '1.2.1';
 
   /* ---------- small helpers ---------- */
   function $(id) { return document.getElementById(id); }
@@ -202,14 +202,16 @@
     var parts = [song.artist, song.year, song.writers ? 'written by ' + song.writers : ''].filter(Boolean);
     $('byline').textContent = parts.join(' · ');
     $('songTitle').textContent = song.title;
-    var f = [['Original key', KEYLABEL[song.key]], ['Tempo', song.bpm + ' BPM'], ['Time', song.time || '4/4'], ['Tuning', song.tuning || 'Standard']];
+    var f = [['Original key', keyName(song.key)], ['Tempo', song.bpm + ' BPM'], ['Time', song.time || '4/4'], ['Tuning', song.tuning || 'Standard']];
     if (song.alt) f.push(['Alt. way to play it', song.alt]);
     $('facts').innerHTML = f.map(function (x) { return '<div class="fact"><small>' + esc(x[0]) + '</small><b>' + esc(x[1]) + '</b></div>'; }).join('');
     document.title = song.title + ' · Songbook';
   }
+  /* minor-key songs (song.minor) show keys as Bm, Em and so on */
+  function keyName(pc) { return KEYLABEL[((pc % 12) + 12) % 12] + (song && song.minor ? 'm' : ''); }
   function keyOptions(orig) {
     var out = '';
-    for (var i = 0; i < 12; i++) out += '<option value="' + i + '">' + KEYLABEL[i] + (i === orig ? ' (original)' : '') + '</option>';
+    for (var i = 0; i < 12; i++) out += '<option value="' + i + '">' + keyName(i) + (i === orig ? ' (original)' : '') + '</option>';
     return out;
   }
   function renderKeySelect() {
@@ -228,8 +230,8 @@
           }).join('') + '</div>';
         }).join('') + '</div></div>';
     }).join('');
-    var name = spell(k, FLATKEYS.indexOf(k) > -1);
-    var txt = 'Playing <b>' + esc(name) + '</b> shapes' + (state.capo > 0 ? ' with the capo on fret <b>' + state.capo + '</b>' : ' with no capo') + '. It sounds in the key of <b>' + KEYLABEL[state.key] + '</b>.';
+    var name = spell(k, FLATKEYS.indexOf(k) > -1) + (song.minor ? 'm' : '');
+    var txt = 'Playing <b>' + esc(name) + '</b> shapes' + (state.capo > 0 ? ' with the capo on fret <b>' + state.capo + '</b>' : ' with no capo') + '. It sounds in the key of <b>' + keyName(state.key) + '</b>.';
     if (state.key === song.key && state.capo === 0) txt += ' This is the key of the record.';
     $('keyReadout').innerHTML = txt;
     $('chartNote').textContent = song.chartNote || '';
