@@ -1,7 +1,7 @@
 /* Open Mic Songbook app. Everything the person adds (lyrics, ticks, settings, recordings) stays on this device. */
 (function () {
   'use strict';
-  var APP_VERSION = '1.2.1';
+  var APP_VERSION = '1.2.2';
 
   /* ---------- small helpers ---------- */
   function $(id) { return document.getElementById(id); }

@@ -59,7 +59,7 @@ const ROLE = ['R','♭2','2','♭3','3','4','♭5','5','♭6','6','♭7','7'];
 const state = {
   key:9, scale:'minpent', prog:'epic', feel:'straight', bpm:100, pos:0, labels:'names', vol:.7, view:'scale', len:8,
   mix:{drums:true,bass:true,chords:true,riff:true},
-  riff:Array(8).fill(null), cursor:0, sel:0, playing:false, step:-1
+  riff:Array(8).fill(null), cursor:0, sel:0, playing:false, step:-1, showOrder:true
 };
 
 /* ---------- helpers ---------- */
@@ -106,7 +106,7 @@ function renderFretboard(){
     const dim = win && !inWindow(f, win), cls = ['n']; if (d === 0) cls.push('root'); if (extra) cls.push('xtra'); else if (!scaled) cls.push('out'); if (dim) cls.push('dim');
     const lab = state.labels === 'names' ? spell(pc) : state.labels === 'ivs' ? IVN[d] : '';
     notes += `<g class="${cls.join(' ')}" data-s="${s}" data-f="${f}" data-pc="${pc}"><circle class="ring" cx="${X(f)}" cy="${Y(s)}" r="15"/><circle class="d" cx="${X(f)}" cy="${Y(s)}" r="12.5"/><text x="${X(f)}" y="${Y(s)}" dy=".35em" text-anchor="middle">${lab}</text></g>`;
-    if (inRiff.has(k)){
+    if (inRiff.has(k) && state.showOrder){
       const t = inRiff.get(k).join('·'), w = 10 + 6 * t.length;
       badges += `<g class="badge" pointer-events="none"><rect x="${X(f) + 12 - w / 2}" y="${Y(s) - 22}" width="${w}" height="15" rx="7.5"/><text x="${X(f) + 12}" y="${Y(s) - 14.5}" dy=".35em" text-anchor="middle">${t}</text></g>`;
     }
@@ -280,7 +280,7 @@ $('key').value = state.key; $('scale').value = state.scale; $('prog').value = st
 
 const PKEY = 'riff';
 function save(){
-  const o = {key:state.key, scale:state.scale, prog:state.prog, feel:state.feel, bpm:state.bpm, view:state.view, len:state.len, labels:state.labels, riff:state.riff, recipe:state.recipe || null};
+  const o = {key:state.key, scale:state.scale, prog:state.prog, feel:state.feel, bpm:state.bpm, view:state.view, len:state.len, labels:state.labels, riff:state.riff, recipe:state.recipe || null, showOrder:state.showOrder};
   try { localStorage.setItem('osb:' + PKEY, JSON.stringify(o)); } catch (e) {}
 }
 function load(){
@@ -296,6 +296,7 @@ function load(){
     if (['names','ivs','role','none'].includes(o.labels)) state.labels = o.labels;
     if (Array.isArray(o.riff) && o.riff.length === state.len) state.riff = o.riff.map(n => n && typeof n.s === 'number' && typeof n.f === 'number' ? {s:n.s, f:n.f} : null);
     state.recipe = o.recipe && RECIPES[o.recipe] ? o.recipe : null;
+    if (typeof o.showOrder === 'boolean') state.showOrder = o.showOrder;
     return true;
   } catch (e) { return false; }
 }
@@ -333,7 +334,14 @@ $('board').onclick = e => {
 $('tab').onclick = e => { const c = e.target.closest('.rl-cell'); if (!c) return; state.cursor = +c.dataset.step; paintHit(); const n = state.riff[state.cursor]; if (n) audition(n.s, n.f); };
 $('recipe').onchange = e => { if (!e.target.value) return; state.recipe = e.target.value; loadRecipe(state.recipe); };
 $('rest').onclick = () => { state.recipe = null; setStep(state.cursor, null); };
-$('clearStep').onclick = () => { state.recipe = null; state.riff[state.cursor] = null; renderTab(); renderFretboard(); };
+/* Undo last note: after a note is added the cursor has already moved on, so clear the selected
+   step if it holds a note, otherwise step back to the previous one and clear that. */
+$('clearStep').onclick = () => {
+  state.recipe = null; $('recipe').value = '';
+  if (!state.riff[state.cursor]) state.cursor = (state.cursor - 1 + state.len) % state.len;
+  state.riff[state.cursor] = null; renderTab(); renderFretboard();
+};
+$('showOrder').onchange = e => { state.showOrder = e.target.checked; renderFretboard(); };
 $('clearAll').onclick = () => { state.recipe = null; $('recipe').value = ''; state.riff = Array(state.len).fill(null); state.cursor = 0; renderTab(); renderFretboard(); };
 
 $('rlen').onclick = e => {
@@ -369,6 +377,7 @@ $('views').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed'
 $('labels').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x.dataset.l === state.labels));
 $('rlen').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', +x.dataset.n === state.len));
 $('recipe').value = state.recipe || '';
+$('showOrder').checked = state.showOrder;
 refreshAll();
 if (!had) { state.recipe = 'chug'; $('recipe').value = 'chug'; loadRecipe('chug'); }
 
